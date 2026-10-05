@@ -1,53 +1,38 @@
-# Security Web Scanner
+## Security Web Scanner
+A lightweight FastAPI-based API designed to inspect HTTP security headers of public websites.
+## Features
 
-Небольшой API на FastAPI для проверки HTTP-заголовков безопасности публичных веб-сайтов.
+* Validates Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy.
+* Returns identified and missing headers, explicit implementation recommendations, and a security score ranging from 0 to 100.
+* Restricts requests exclusively to HTTP/HTTPS protocols and standard ports (80/443).
+* Blocks non-public IP addresses (including those resolved via DNS lookups) and validates every redirection hop up to a maximum limit of 5.
+* Reads response headers on demand without downloading the full message body.
 
-## Возможности
+The generated security score evaluates header presence only rather than individual directive correctness and does not constitute a comprehensive security audit. Strict-Transport-Security is factored into the calculation exclusively for HTTPS endpoints.
+## Requirements
 
-- Проверяет `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` и `Permissions-Policy`.
-- Возвращает найденные и отсутствующие заголовки, рекомендации и оценку от 0 до 100.
-- Разрешает только HTTP/HTTPS и порты 80/443.
-- Блокирует непубличные IP-адреса, включая адреса из DNS-ответов, и проверяет каждый редирект (не более пяти).
-- Читает заголовки ответа, не загружая тело целиком.
+* Python 3.10 or newer
 
-Оценка показывает только наличие заголовков, а не корректность их директив и не является полноценным аудитом безопасности. `Strict-Transport-Security` учитывается только для HTTPS-ответа.
+## Installation and Execution
+Run the following commands from the root directory of the project:
 
-## Требования
-
-- Python 3.10 или новее
-
-## Установка и запуск
-
-Из корня проекта выполните:
-
-```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 uvicorn app.main:app --reload
-```
 
-Интерактивная документация API: <http://127.0.0.1:8000/docs>.
+Interactive API documentation is accessible at: http://127.0.0.1:8000/docs.
+## Usage
+Submit a POST /scan request containing the target URL payload:
 
-## Использование
-
-Отправьте `POST /scan` с URL сайта:
-
-```powershell
 $body = @{ url = "https://example.com" } | ConvertTo-Json
 Invoke-RestMethod -Uri "http://127.0.0.1:8000/scan" -Method Post -ContentType "application/json" -Body $body
-```
 
-Ответ содержит `target_url`, `security_score`, `headers_found`, `headers_missing` и `recommendations`.
+The server response returns target_url, security_score, headers_found, headers_missing, and recommendations.
+Primary HTTP response status codes: 200 — scan successfully processed; 400 — restricted or unsupported URL; 422 — validation constraint error; 502 — connection failure or bad gateway response from target; 504 — request execution timeout.
+## Tests
 
-Основные статусы ответа: `200` — сканирование выполнено; `400` — URL запрещён или не поддерживается; `422` — некорректный запрос; `502` — ошибка подключения или ответа целевого сервера; `504` — истёк таймаут.
-
-## Тесты
-
-```powershell
 python -m unittest discover -s tests -v
-```
 
-## Безопасное использование
-
-Сканируйте только сайты, на проверку которых у вас есть разрешение. Сервис намеренно блокирует localhost, частные и другие непубличные адреса, а также порты, отличные от 80 и 443.
+## Safe Usage Disclaimer
+Only execute scans against endpoints you own or have explicit authorization to test. This utility intentionally filters out localhost routing, private subnets, and alternative non-standard port assignments outside of 80 and 443.
