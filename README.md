@@ -1,6 +1,8 @@
 ## Security Web Scanner
 A lightweight FastAPI-based API designed to inspect HTTP security headers of public websites.
 ## Features
+<img width="1902" height="908" alt="image" src="https://github.com/user-attachments/assets/9daa341a-60a0-4041-bacc-d3e61872f860" />
+
 
 * Validates Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy.
 * Returns identified and missing headers, explicit implementation recommendations, and a security score ranging from 0 to 100.
